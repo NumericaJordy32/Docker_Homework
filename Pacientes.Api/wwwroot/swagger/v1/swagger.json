@@ -1,0 +1,28 @@
+{
+  "openapi": "3.0.1",
+  "info": { "title": "Microservicio de Pacientes", "version": "v1" },
+  "servers": [{ "url": "http://localhost:5101" }],
+  "paths": {
+    "/api/pacientes": {
+      "get": {
+        "tags": ["Pacientes"], "summary": "Lista todos los pacientes",
+        "responses": { "200": { "description": "Listado", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Paciente" } } } } } }
+      },
+      "post": {
+        "tags": ["Pacientes"], "summary": "Crea un paciente",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PacienteRequest" } } } },
+        "responses": { "201": { "description": "Creado" }, "400": { "description": "Datos inválidos" }, "409": { "description": "Cédula duplicada" } }
+      }
+    },
+    "/api/pacientes/{id}": {
+      "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "format": "int32" } }],
+      "get": { "tags": ["Pacientes"], "summary": "Busca un paciente por ID", "responses": { "200": { "description": "Encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Paciente" } } } }, "404": { "description": "No encontrado" } } },
+      "put": { "tags": ["Pacientes"], "summary": "Actualiza un paciente", "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PacienteRequest" } } } }, "responses": { "204": { "description": "Actualizado" }, "400": { "description": "Datos inválidos" }, "404": { "description": "No encontrado" }, "409": { "description": "Cédula duplicada" } } },
+      "delete": { "tags": ["Pacientes"], "summary": "Elimina un paciente", "responses": { "204": { "description": "Eliminado" }, "404": { "description": "No encontrado" } } }
+    }
+  },
+  "components": { "schemas": {
+    "Paciente": { "type": "object", "properties": { "idPaciente": { "type": "integer" }, "cedula": { "type": "string" }, "nombre": { "type": "string" }, "apellido": { "type": "string" }, "direccion": { "type": "string", "nullable": true } } },
+    "PacienteRequest": { "type": "object", "required": ["cedula", "nombre", "apellido"], "properties": { "cedula": { "type": "string", "maxLength": 20 }, "nombre": { "type": "string", "maxLength": 100 }, "apellido": { "type": "string", "maxLength": 100 }, "direccion": { "type": "string", "maxLength": 250, "nullable": true } } }
+  } }
+}

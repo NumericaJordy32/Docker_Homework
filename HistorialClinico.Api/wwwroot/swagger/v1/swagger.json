@@ -1,0 +1,28 @@
+{
+  "openapi": "3.0.1",
+  "info": { "title": "Microservicio de Historial Clínico", "version": "v1" },
+  "servers": [{ "url": "http://localhost:5102" }],
+  "paths": {
+    "/api/historiales": {
+      "get": {
+        "tags": ["Historiales"], "summary": "Lista todos los historiales",
+        "responses": { "200": { "description": "Listado", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/HistorialClinico" } } } } } }
+      },
+      "post": {
+        "tags": ["Historiales"], "summary": "Crea un historial clínico",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HistorialRequest" } } } },
+        "responses": { "201": { "description": "Creado" }, "400": { "description": "Datos inválidos" }, "409": { "description": "Número de historia duplicado" } }
+      }
+    },
+    "/api/historiales/{id}": {
+      "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "format": "int32" } }],
+      "get": { "tags": ["Historiales"], "summary": "Busca un historial por ID", "responses": { "200": { "description": "Encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HistorialClinico" } } } }, "404": { "description": "No encontrado" } } },
+      "put": { "tags": ["Historiales"], "summary": "Actualiza un historial", "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/HistorialRequest" } } } }, "responses": { "204": { "description": "Actualizado" }, "400": { "description": "Datos inválidos" }, "404": { "description": "No encontrado" }, "409": { "description": "Número de historia duplicado" } } },
+      "delete": { "tags": ["Historiales"], "summary": "Elimina un historial", "responses": { "204": { "description": "Eliminado" }, "404": { "description": "No encontrado" } } }
+    }
+  },
+  "components": { "schemas": {
+    "HistorialClinico": { "type": "object", "properties": { "idHistorialClinico": { "type": "integer" }, "idPaciente": { "type": "integer" }, "numHistoria": { "type": "string" }, "diagnostico": { "type": "string" }, "tratamiento": { "type": "string", "nullable": true }, "fecha": { "type": "string", "format": "date-time" } } },
+    "HistorialRequest": { "type": "object", "required": ["idPaciente", "numHistoria", "diagnostico"], "properties": { "idPaciente": { "type": "integer", "minimum": 1 }, "numHistoria": { "type": "string", "maxLength": 30 }, "diagnostico": { "type": "string", "maxLength": 500 }, "tratamiento": { "type": "string", "maxLength": 500, "nullable": true }, "fecha": { "type": "string", "format": "date-time", "nullable": true } } }
+  } }
+}

@@ -1,0 +1,68 @@
+@gateway = http://localhost:5100
+@pacienteId = 1
+@historialId = 1
+
+### Estado del gateway
+GET {{gateway}}/health
+
+### Crear paciente
+POST {{gateway}}/pacientes
+Content-Type: application/json
+
+{
+  "cedula": "1755844436",
+  "nombre": "Jordy",
+  "apellido": "Prado",
+  "direccion": "Calle 10 # 20-30"
+}
+
+### Listar pacientes
+GET {{gateway}}/pacientes
+
+### Buscar paciente por id
+GET {{gateway}}/pacientes/{{pacienteId}}
+
+### Actualizar paciente
+PUT {{gateway}}/pacientes/{{pacienteId}}
+Content-Type: application/json
+
+{
+  "cedula": "1000123456",
+  "nombre": "Ana María",
+  "apellido": "García",
+  "direccion": "Carrera 5 # 11-22"
+}
+
+### Crear historial clínico
+POST {{gateway}}/historiales
+Content-Type: application/json
+
+{
+  "idPaciente": {{pacienteId}},
+  "numHistoria": "HC-0001",
+  "diagnostico": "Migraña",
+  "tratamiento": "Control médico y analgésico"
+}
+
+### Listar historiales
+GET {{gateway}}/historiales
+
+### Buscar historial por id
+GET {{gateway}}/historiales/{{historialId}}
+
+### Actualizar historial
+PUT {{gateway}}/historiales/{{historialId}}
+Content-Type: application/json
+
+{
+  "idPaciente": {{pacienteId}},
+  "numHistoria": "HC-0001",
+  "diagnostico": "Migraña controlada",
+  "tratamiento": "Seguimiento en 30 días"
+}
+
+### Eliminar historial
+DELETE {{gateway}}/historiales/{{historialId}}
+
+### Eliminar paciente
+DELETE {{gateway}}/pacientes/{{pacienteId}}
