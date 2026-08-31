@@ -6,13 +6,13 @@ Proyecto académico compuesto por dos API, un API Gateway, SQL Server y RabbitMQ
 
 | Componente | Dirección o puerto |
 |---|---|
-| API Gateway | http://localhost:5100 |
+| API Gateway / interfaz CRUD | http://localhost:5100 |
 | API de pacientes / Swagger | http://localhost:5101/swagger |
 | API de historial / Swagger | http://localhost:5102/swagger |
 | RabbitMQ Management | http://localhost:15672 |
 | SQL Server | `localhost,1433` |
 
-El Gateway publica las rutas `/pacientes` y `/historiales`. Las API se comunican mediante el exchange de RabbitMQ `clinica.events`.
+El Gateway publica las rutas `/pacientes` y `/historiales`, además de una interfaz CRUD en su página principal. Las API se comunican mediante el exchange de RabbitMQ `clinica.events`.
 
 ## Requisitos
 

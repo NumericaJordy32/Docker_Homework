@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Clínica - API Gateway</title>
+  <style>
+    :root { font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: #f5f8fc; background: #07101d; }
+    * { box-sizing: border-box; } body { margin: 0; min-height: 100vh; background: radial-gradient(circle at 80% -10%, #174d79 0, transparent 38%), #08111f; }
+    .shell { max-width: 1380px; margin: 0 auto; padding: 28px; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 18px 22px; border: 1px solid #39516a; border-radius: 8px; background: #0c1c2dE8; box-shadow: 0 18px 45px #0006; }
+    .brand { display: flex; align-items: center; gap: 14px; } .logo { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 8px; background: #f4c542; color: #091421; font-size: 25px; font-weight: 800; transform: rotate(-8deg); box-shadow: 0 8px 20px #f4c54244; }
+    h1 { margin: 0; font-size: clamp(1.35rem, 3vw, 2rem); letter-spacing: .02em; text-transform: uppercase; } .sub { margin-top: 4px; color: #9bb0c3; font-size: .92rem; }
+    .status { display: flex; align-items: center; gap: 8px; color: #f4c542; font-size: .78rem; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; } .dot { width: 9px; height: 9px; border-radius: 50%; background: #39d98a; box-shadow: 0 0 13px #39d98a; }
+    .intro { display: flex; justify-content: space-between; align-items: end; margin: 28px 2px 14px; } .intro h2 { margin: 0; font-size: 1.12rem; text-transform: uppercase; letter-spacing: .08em; } .intro p { margin: 5px 0 0; color: #7893af; font-size: .88rem; }
+    .flight-board { display: grid; grid-template-columns: 1fr auto auto; gap: 18px; align-items: center; margin-bottom: 20px; padding: 12px 16px; border: 1px solid #334b63; border-radius: 6px; background: #101f30; color: #d9e8f6; font: .78rem ui-monospace, monospace; } .flight-board strong { color: #f4c542; letter-spacing: .12em; } .flight-board span { color: #8ca6be; }
+    main { display: grid; grid-template-columns: repeat(auto-fit, minmax(430px, 1fr)); gap: 20px; }
+    section { overflow: hidden; background: #f7faff; color: #14243a; border: 1px solid #d7e4f2; border-radius: 8px; box-shadow: 0 16px 38px #0004; }
+    .card-head { display: flex; justify-content: space-between; align-items: center; padding: 17px 21px; background: #e8f0f7; border-bottom: 4px solid #f4c542; } .card-head h2 { margin: 0; font-size: 1.05rem; text-transform: uppercase; letter-spacing: .07em; }
+    .endpoint { color: #1b4c72; background: #d2e6f5; border-radius: 4px; padding: 5px 8px; font: .76rem ui-monospace, monospace; }
+    .card-body { padding: 18px 21px 21px; } form { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0 0 14px; }
+    input, textarea, button { font: inherit; padding: 10px 11px; border: 1px solid #cbd8e6; border-radius: 8px; } input, textarea { background: white; color: #14243a; outline: none; } input:focus, textarea:focus { border-color: #278ee8; box-shadow: 0 0 0 3px #278ee822; }
+    textarea { min-height: 68px; resize: vertical; } input[name="id"] { max-width: 125px; } .wide { grid-column: 1 / -1; }
+    button { cursor: pointer; background: #176fb3; color: white; border: 0; font-weight: 650; transition: transform .15s, filter .15s; } button:hover { filter: brightness(1.08); transform: translateY(-1px); }
+    button.secondary { background: #536c86; } button.danger { background: #d04c58; } .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    table { display: block; width: 100%; overflow-x: auto; border-collapse: collapse; margin-top: 12px; font-size: .84rem; } th, td { min-width: 92px; text-align: left; padding: 9px 7px; border-bottom: 1px solid #e2eaf2; vertical-align: top; } th { color: #52708e; font-size: .75rem; text-transform: uppercase; letter-spacing: .04em; }
+    pre { white-space: pre-wrap; color: #1769a9; min-height: 20px; margin: 12px 0 0; font: .85rem ui-monospace, monospace; } footer { padding: 22px 2px 4px; color: #68839f; font-size: .78rem; text-align: center; }
+    @media (max-width: 600px) { .shell { padding: 14px; } .topbar, .intro { align-items: flex-start; flex-direction: column; } main { grid-template-columns: 1fr; } form { grid-template-columns: 1fr; } .wide { grid-column: auto; } .status { align-self: flex-end; } }
+  </style>
+</head>
+<body>
+<div class="shell">
+  <header class="topbar">
+    <div class="brand"><div class="logo">✈</div><div><h1>Clínica Airport Gateway</h1><div class="sub">Terminal central de servicios y operaciones clínicas</div></div></div>
+    <div class="status"><span class="dot"></span> Puerta abierta · operativo</div>
+  </header>
+  <div class="intro"><div><h2>Panel de embarque</h2><p>Gestiona los recursos publicados por el Gateway en tiempo real.</p></div><p>Terminal 01 · Zona segura</p></div>
+  <div class="flight-board"><strong>CONTROL DE SALIDAS</strong><span>VUELO API-5100</span><span>ESTADO: A TIEMPO</span></div>
+  <main>
+    <section>
+      <div class="card-head"><h2>Puerta 01 · Pacientes</h2><span class="endpoint">/pacientes</span></div><div class="card-body">
+      <form id="paciente-form">
+        <input name="id" type="number" min="1" placeholder="ID (para editar/borrar)">
+        <input name="cedula" required maxlength="20" placeholder="Cédula">
+        <input name="nombre" required maxlength="100" placeholder="Nombre">
+        <input name="apellido" required maxlength="100" placeholder="Apellido">
+        <input class="wide" name="direccion" maxlength="250" placeholder="Dirección">
+      </form>
+      <div class="actions">
+        <button onclick="savePaciente()">Crear</button><button onclick="updatePaciente()">Editar / actualizar</button>
+        <button class="danger" onclick="deleteItem('pacientes')">Eliminar por ID</button>
+        <button class="secondary" onclick="loadPacientes()">Buscar/listar</button>
+      </div>
+      <pre id="paciente-msg"></pre><div id="pacientes-table"></div></div>
+    </section>
+    <section>
+      <div class="card-head"><h2>Puerta 02 · Historial clínico</h2><span class="endpoint">/historiales</span></div><div class="card-body">
+      <form id="historial-form">
+        <input name="id" type="number" min="1" placeholder="ID (para editar/borrar)">
+        <input name="idPaciente" required type="number" min="1" placeholder="ID paciente">
+        <input name="numHistoria" required maxlength="30" placeholder="Número de historia">
+        <input name="fecha" type="datetime-local" placeholder="Fecha">
+        <textarea class="wide" name="diagnostico" required maxlength="500" placeholder="Diagnóstico"></textarea>
+        <textarea class="wide" name="tratamiento" maxlength="500" placeholder="Tratamiento"></textarea>
+      </form>
+      <div class="actions">
+        <button onclick="saveHistorial()">Crear</button><button onclick="updateHistorial()">Editar / actualizar</button>
+        <button class="danger" onclick="deleteItem('historiales')">Eliminar por ID</button>
+        <button class="secondary" onclick="loadHistoriales()">Buscar/listar</button>
+      </div>
+      <pre id="historial-msg"></pre><div id="historiales-table"></div></div>
+    </section>
+  </main>
+  <footer>CLÍNICA AIRPORT GATEWAY · Comunicación interna mediante RabbitMQ · Sin autenticación en entorno académico</footer>
+</div>
+  <script>
+    const jsonHeaders = { 'Content-Type': 'application/json' };
+    const value = (form, name) => form.elements[name].value.trim();
+    async function api(path, options = {}) {
+      const response = await fetch(path, options); const text = await response.text();
+      if (!response.ok) throw new Error(`${response.status}: ${text || response.statusText}`);
+      return text ? JSON.parse(text) : null;
+    }
+    function show(id, message, error = false) { const el = document.getElementById(id); el.textContent = message || ''; el.style.color = error ? '#b42318' : '#1769d1'; }
+    function render(target, rows, columns) {
+      document.getElementById(target).innerHTML = rows.length ? `<table><thead><tr>${columns.map(c => `<th>${c[1]}</th>`).join('')}</tr></thead><tbody>${rows.map(r => `<tr>${columns.map(c => `<td>${r[c[0]] ?? ''}</td>`).join('')}</tr>`).join('')}</tbody></table>` : '<p>No hay registros.</p>';
+    }
+    async function loadPacientes() { try { const rows = await api('/pacientes'); render('pacientes-table', rows, [['idPaciente','ID'],['cedula','Cédula'],['nombre','Nombre'],['apellido','Apellido'],['direccion','Dirección']]); show('paciente-msg', `${rows.length} paciente(s)`); } catch(e) { show('paciente-msg', e.message, true); } }
+    async function loadHistoriales() { try { const rows = await api('/historiales'); render('historiales-table', rows, [['idHistorialClinico','ID'],['idPaciente','Paciente'],['numHistoria','Historia'],['diagnostico','Diagnóstico'],['tratamiento','Tratamiento'],['fecha','Fecha']]); show('historial-msg', `${rows.length} historial(es)`); } catch(e) { show('historial-msg', e.message, true); } }
+    async function savePaciente() { const f = document.getElementById('paciente-form'); try { await api('/pacientes', { method:'POST', headers:jsonHeaders, body:JSON.stringify({ cedula:value(f,'cedula'), nombre:value(f,'nombre'), apellido:value(f,'apellido'), direccion:value(f,'direccion') || null }) }); show('paciente-msg','Paciente creado'); loadPacientes(); } catch(e) { show('paciente-msg',e.message,true); } }
+    async function updatePaciente() { const f = document.getElementById('paciente-form'), id=value(f,'id'); if(!id) return show('paciente-msg','Indica el ID para actualizar',true); try { await api(`/pacientes/${id}`, { method:'PUT', headers:jsonHeaders, body:JSON.stringify({ cedula:value(f,'cedula'), nombre:value(f,'nombre'), apellido:value(f,'apellido'), direccion:value(f,'direccion') || null }) }); show('paciente-msg','Paciente actualizado'); loadPacientes(); } catch(e) { show('paciente-msg',e.message,true); } }
+    async function saveHistorial() { const f = document.getElementById('historial-form'); try { await api('/historiales', { method:'POST', headers:jsonHeaders, body:historyBody(f) }); show('historial-msg','Historial creado'); loadHistoriales(); } catch(e) { show('historial-msg',e.message,true); } }
+    async function updateHistorial() { const f = document.getElementById('historial-form'), id=value(f,'id'); if(!id) return show('historial-msg','Indica el ID para actualizar',true); try { await api(`/historiales/${id}`, { method:'PUT', headers:jsonHeaders, body:historyBody(f) }); show('historial-msg','Historial actualizado'); loadHistoriales(); } catch(e) { show('historial-msg',e.message,true); } }
+    function historyBody(f) { return JSON.stringify({ idPaciente:Number(value(f,'idPaciente')), numHistoria:value(f,'numHistoria'), diagnostico:value(f,'diagnostico'), tratamiento:value(f,'tratamiento') || null, fecha:value(f,'fecha') ? new Date(value(f,'fecha')).toISOString() : null }); }
+    async function deleteItem(resource) { const form = document.getElementById(resource === 'pacientes' ? 'paciente-form' : 'historial-form'), id=value(form,'id'), msg=resource === 'pacientes' ? 'paciente-msg' : 'historial-msg'; if(!id) return show(msg,'Indica el ID para eliminar',true); try { await api(`/${resource}/${id}`, {method:'DELETE'}); show(msg,'Registro eliminado'); resource === 'pacientes' ? loadPacientes() : loadHistoriales(); } catch(e) { show(msg,e.message,true); } }
+    loadPacientes(); loadHistoriales();
+  </script>
+</body>
+</html>
