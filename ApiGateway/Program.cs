@@ -9,6 +9,8 @@ builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy
 
 var app = builder.Build();
 
+app.UseDefaultFiles();
+app.UseStaticFiles();
 app.MapGet("/health", () => Results.Ok(new { service = "api-gateway", status = "ok" }));
 app.UseCors();
 app.MapReverseProxy();

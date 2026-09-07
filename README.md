@@ -4,9 +4,15 @@ Trabajo Autónomo de Aplicaciones Distribuidas. Contiene Pacientes, Historial Cl
 
 ## Arquitectura
 
-`Cliente -> API Gateway -> Pacientes / Historial Clínico`
+| Componente | Dirección o puerto |
+|---|---|
+| API Gateway / interfaz CRUD | http://localhost:5100 |
+| API de pacientes / Swagger | http://localhost:5101/swagger |
+| API de historial / Swagger | http://localhost:5102/swagger |
+| RabbitMQ Management | http://localhost:15672 |
+| SQL Server | `localhost,1433` |
 
-`Cliente -> API Gateway -> OAuthJWT`
+El Gateway publica las rutas `/pacientes` y `/historiales`. Las API se comunican mediante el exchange de RabbitMQ `clinica.events`.
 
 `Pacientes <-> RabbitMQ <-> Historial Clínico`
 `Pacientes -> SQL Server PacientesDB`
