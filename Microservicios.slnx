@@ -1,5 +1,6 @@
 <Solution>
   <Project Path="ApiGateway/ApiGateway.csproj" />
+  <Project Path="OAuthJWT.Api/OAuthJWT.Api.csproj" />
   <Project Path="HistorialClinico.Api/HistorialClinico.Api.csproj" />
   <Project Path="Pacientes.Api/Pacientes.Api.csproj" />
 </Solution>

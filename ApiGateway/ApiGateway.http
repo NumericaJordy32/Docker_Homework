@@ -2,6 +2,15 @@
 @pacienteId = 1
 @historialId = 1
 
+### Obtener token JWT (servicio independiente OAuthJWT)
+POST {{gateway}}/oauth/token
+Content-Type: application/json
+
+{
+  "usuario": "usuario",
+  "contrasena": "ClinicaUser_2026!"
+}
+
 ### Estado del gateway
 GET {{gateway}}/health
 

@@ -1,0 +1,45 @@
+PLANTILLA PRIVADA DE CREDENCIALES - CLINICA
+Copiar este archivo fuera del repositorio y llenar los campos entre < >.
+No subir claves reales a GitHub.
+
+1. AZURE
+Suscripcion: Azure subscription 1
+Resource Group: rg-clinica-aa-jordy-202609
+Region SQL: Australia East
+ACR: acrclinicajordy202609.azurecr.io
+Servidor SQL: sqlclinicajordy202609.database.windows.net
+Base de datos Pacientes: PacientesDB
+Base de datos Historial: HistorialClinicoDB
+Usuario SQL: sqladminclinica
+Contrasena SQL: <ESCRIBIR_AQUI_LA_CLAVE_CREADA_EN_AZURE>
+
+2. OAUTH / JWT
+URL local OAuth: http://localhost:5103/api/oauth/token
+URL mediante Gateway: http://localhost:5100/oauth/api/oauth/token
+Usuario normal: usuario
+Contrasena usuario: <CONTRASENA_OAUTH_USUARIO_LOCAL>
+Rol: Usuario
+Usuario administrador: administrador
+Contrasena administrador: <CONTRASENA_OAUTH_ADMIN_LOCAL>
+Rol: Administrador
+JWT Issuer: Clinica.OAuthJWT
+JWT Audience: Clinica.Clientes
+JWT Key: <CLAVE_JWT_DE_AL_MENOS_32_CARACTERES>
+
+3. RABBITMQ
+Host local: localhost
+Puerto AMQP: 5672
+Puerto panel: 15672
+Usuario RabbitMQ: admin
+Contrasena RabbitMQ: <CONTRASENA_RABBITMQ>
+Panel local: http://localhost:15672
+
+4. ACR (SOLO SI SE PUBLICAN IMAGENES)
+Servidor: acrclinicajordy202609.azurecr.io
+Usuario ACR: acrclinicajordy202609
+Contrasena ACR: <CLAVE_ADMIN_AZURE_CONTAINER_REGISTRY>
+
+IMPORTANTE
+- Las contrasenas reales no deben estar en appsettings.json, scripts SQL, README ni GitHub.
+- Antes de publicar en GitHub, confirme que este archivo conserva solo placeholders.
+- Si una clave se compartio por chat o se mostro en pantalla, regenerela en Azure.

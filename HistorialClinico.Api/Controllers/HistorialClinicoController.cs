@@ -1,12 +1,14 @@
 using HistorialClinico.Api.Data;
 using HistorialClinico.Api.Dtos;
 using HistorialClinico.Api.Messaging;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Historial = HistorialClinico.Api.Models.HistorialClinico;
 
 namespace HistorialClinico.Api.Controllers;
 
+[Authorize]
 [ApiController, Route("api/historiales")]
 public sealed class HistorialClinicoController(IHistorialRepository repository, IRabbitMqPublisher publisher) : ControllerBase
 {
@@ -44,6 +46,7 @@ public sealed class HistorialClinicoController(IHistorialRepository repository, 
         catch (SqlException ex) when (ex.Number is 2601 or 2627) { return Conflict(new { message = "Ya existe un historial con ese número de historia." }); }
     }
 
+    [Authorize(Roles = "Administrador")]
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id, CancellationToken ct)
     {

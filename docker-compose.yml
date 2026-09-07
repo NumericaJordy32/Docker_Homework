@@ -1,16 +1,16 @@
 name: clinica-microservicios
 
 services:
-  sqlserver:
+  sqlserver-pacientes:
     image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: clinica-sqlserver
+    container_name: clinica-sqlserver-pacientes
     environment:
       ACCEPT_EULA: "Y"
       MSSQL_SA_PASSWORD: "${SQL_SA_PASSWORD:-Clinica_2026!}"
     ports:
       - "1433:1433"
     volumes:
-      - sqlserver-data:/var/opt/mssql
+      - sqlserver-pacientes-data:/var/opt/mssql
     healthcheck:
       test:
         - CMD-SHELL
@@ -21,21 +21,59 @@ services:
       start_period: 20s
     restart: unless-stopped
 
-  database-init:
+  pacientes-database-init:
     image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: clinica-database-init
+    container_name: clinica-pacientes-database-init
     environment:
       MSSQL_SA_PASSWORD: "${SQL_SA_PASSWORD:-Clinica_2026!}"
     volumes:
-      - ./database/init.sql:/scripts/init.sql:ro
+      - ./database/pacientes-init.sql:/scripts/init.sql:ro
     entrypoint:
       - /bin/bash
       - -c
       - >-
-        /opt/mssql-tools18/bin/sqlcmd -C -b -S sqlserver -U sa
+        /opt/mssql-tools18/bin/sqlcmd -C -b -S sqlserver-pacientes -U sa
         -P "$$MSSQL_SA_PASSWORD" -i /scripts/init.sql
     depends_on:
-      sqlserver:
+      sqlserver-pacientes:
+        condition: service_healthy
+    restart: "no"
+
+  sqlserver-historial:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: clinica-sqlserver-historial
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "${SQL_SA_PASSWORD:-Clinica_2026!}"
+    ports:
+      - "1434:1433"
+    volumes:
+      - sqlserver-historial-data:/var/opt/mssql
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "$$MSSQL_SA_PASSWORD" -Q "SELECT 1" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    restart: unless-stopped
+
+  historial-database-init:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: clinica-historial-database-init
+    environment:
+      MSSQL_SA_PASSWORD: "${SQL_SA_PASSWORD:-Clinica_2026!}"
+    volumes:
+      - ./database/historial-init.sql:/scripts/init.sql:ro
+    entrypoint:
+      - /bin/bash
+      - -c
+      - >-
+        /opt/mssql-tools18/bin/sqlcmd -C -b -S sqlserver-historial -U sa
+        -P "$$MSSQL_SA_PASSWORD" -i /scripts/init.sql
+    depends_on:
+      sqlserver-historial:
         condition: service_healthy
     restart: "no"
 
@@ -58,6 +96,19 @@ services:
       retries: 10
     restart: unless-stopped
 
+  oauth-jwt-api:
+    build:
+      context: ./OAuthJWT.Api
+      dockerfile: Dockerfile
+    image: clinica/oauth-jwt-api:local
+    container_name: clinica-oauth-jwt-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      Jwt__Key: "${JWT_KEY:-Clinica_Jwt_Development_Key_2026_Change_Me!}"
+    ports:
+      - "5103:8080"
+    restart: unless-stopped
+
   pacientes-api:
     build:
       context: ./Pacientes.Api
@@ -66,15 +117,16 @@ services:
     container_name: clinica-pacientes-api
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__PacientesDB: "Server=sqlserver,1433;Database=PacientesDB;User Id=sa;Password=${SQL_SA_PASSWORD:-Clinica_2026!};TrustServerCertificate=True;Encrypt=False"
+      ConnectionStrings__PacientesDB: "Server=sqlserver-pacientes,1433;Database=PacientesDB;User Id=sa;Password=${SQL_SA_PASSWORD:-Clinica_2026!};TrustServerCertificate=True;Encrypt=False"
       RabbitMq__HostName: rabbitmq
       RabbitMq__Port: 5672
       RabbitMq__UserName: "${RABBITMQ_USER:-admin}"
       RabbitMq__Password: "${RABBITMQ_PASSWORD:-root12345}"
+      Jwt__Key: "${JWT_KEY:-Clinica_Jwt_Development_Key_2026_Change_Me!}"
     ports:
       - "5101:8080"
     depends_on:
-      database-init:
+      pacientes-database-init:
         condition: service_completed_successfully
       rabbitmq:
         condition: service_healthy
@@ -88,15 +140,16 @@ services:
     container_name: clinica-historial-clinico-api
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__HistorialClinicoDB: "Server=sqlserver,1433;Database=HistorialClinicoDB;User Id=sa;Password=${SQL_SA_PASSWORD:-Clinica_2026!};TrustServerCertificate=True;Encrypt=False"
+      ConnectionStrings__HistorialClinicoDB: "Server=sqlserver-historial,1433;Database=HistorialClinicoDB;User Id=sa;Password=${SQL_SA_PASSWORD:-Clinica_2026!};TrustServerCertificate=True;Encrypt=False"
       RabbitMq__HostName: rabbitmq
       RabbitMq__Port: 5672
       RabbitMq__UserName: "${RABBITMQ_USER:-admin}"
       RabbitMq__Password: "${RABBITMQ_PASSWORD:-root12345}"
+      Jwt__Key: "${JWT_KEY:-Clinica_Jwt_Development_Key_2026_Change_Me!}"
     ports:
       - "5102:8080"
     depends_on:
-      database-init:
+      historial-database-init:
         condition: service_completed_successfully
       rabbitmq:
         condition: service_healthy
@@ -112,13 +165,16 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       ReverseProxy__Clusters__pacientes-cluster__Destinations__pacientes-api__Address: "http://pacientes-api:8080/"
       ReverseProxy__Clusters__historiales-cluster__Destinations__historial-clinico-api__Address: "http://historial-clinico-api:8080/"
+      ReverseProxy__Clusters__oauth-cluster__Destinations__oauth-jwt-api__Address: "http://oauth-jwt-api:8080/"
     ports:
       - "5100:8080"
     depends_on:
       - pacientes-api
       - historial-clinico-api
+      - oauth-jwt-api
     restart: unless-stopped
 
 volumes:
-  sqlserver-data:
+  sqlserver-pacientes-data:
+  sqlserver-historial-data:
   rabbitmq-data:

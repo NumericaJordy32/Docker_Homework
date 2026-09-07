@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Pacientes.Api.Data;
@@ -7,6 +8,7 @@ using Pacientes.Api.Models;
 
 namespace Pacientes.Api.Controllers;
 
+[Authorize]
 [ApiController, Route("api/pacientes")]
 public sealed class PacientesController(IPacienteRepository repository, IRabbitMqPublisher publisher) : ControllerBase
 {
@@ -44,6 +46,7 @@ public sealed class PacientesController(IPacienteRepository repository, IRabbitM
         catch (SqlException ex) when (ex.Number is 2601 or 2627) { return Conflict(new { message = "Ya existe un paciente con esa cédula." }); }
     }
 
+    [Authorize(Roles = "Administrador")]
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id, CancellationToken ct)
     {

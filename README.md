@@ -1,111 +1,75 @@
-# Clínica - microservicios con Docker
+# Clínica - arquitectura distribuida segura
 
-Proyecto académico compuesto por dos API, un API Gateway, SQL Server y RabbitMQ. Todo se construye, configura e inicia desde un único archivo `docker-compose.yml`; no es necesario instalar .NET ni SQL Server en el equipo anfitrión.
+Trabajo Autónomo de Aplicaciones Distribuidas. Contiene Pacientes, Historial Clínico, API Gateway, RabbitMQ y `OAuthJWT.Api`; SQL Server es la infraestructura de persistencia.
 
-## Componentes
+## Arquitectura
 
-| Componente | Dirección o puerto |
-|---|---|
-| API Gateway | http://localhost:5100 |
-| API de pacientes / Swagger | http://localhost:5101/swagger |
-| API de historial / Swagger | http://localhost:5102/swagger |
-| RabbitMQ Management | http://localhost:15672 |
-| SQL Server | `localhost,1433` |
+`Cliente -> API Gateway -> Pacientes / Historial Clínico`
 
-El Gateway publica las rutas `/pacientes` y `/historiales`. Las API se comunican mediante el exchange de RabbitMQ `clinica.events`.
+`Cliente -> API Gateway -> OAuthJWT`
 
-## Requisitos
+`Pacientes <-> RabbitMQ <-> Historial Clínico`
+`Pacientes -> SQL Server PacientesDB`
+`Historial Clínico -> SQL Server HistorialClinicoDB`
 
-1. Instalar [Docker Desktop](https://www.docker.com/products/docker-desktop/).
-2. Iniciar Docker Desktop y esperar hasta que el motor esté funcionando.
-3. Clonar o descargar este repositorio.
-4. Verificar que los puertos `1433`, `5672`, `15672`, `5100`, `5101` y `5102` estén libres.
+OAuthJWT es el único emisor de tokens. Las APIs de negocio validan JWT y requieren token para su CRUD; `DELETE` requiere el rol `Administrador`.
 
-## Ejecución paso a paso
+## Ejecución local
 
-Abra PowerShell o una terminal dentro de la carpeta que contiene `docker-compose.yml` y ejecute:
-
-```powershell
-docker compose up --build -d
-```
-
-Este único comando descarga las imágenes, compila las tres aplicaciones, espera a SQL Server y RabbitMQ, ejecuta `database/init.sql`, crea las dos bases y finalmente inicia todo el sistema.
-
-Compruebe el estado de los contenedores:
-
-```powershell
-docker compose ps
-```
-
-El contenedor `clinica-database-init` debe aparecer como `Exited (0)`. Esto es correcto: termina después de crear las bases.
-
-Pruebe el Gateway:
-
-```powershell
-Invoke-RestMethod http://localhost:5100/health
-Invoke-RestMethod http://localhost:5100/pacientes
-Invoke-RestMethod http://localhost:5100/historiales
-```
-
-También puede abrir Swagger:
-
-- Pacientes: http://localhost:5101/swagger
-- Historial clínico: http://localhost:5102/swagger
-
-## Credenciales de desarrollo
-
-- SQL Server: usuario `sa`, contraseña `Clinica_2026!`.
-- RabbitMQ: usuario `admin`, contraseña `root12345`.
-
-Para cambiarlas sin editar el Compose, cree un archivo `.env` junto a `docker-compose.yml`:
+Requiere Docker Desktop. Cree `.env` (no se versiona):
 
 ```dotenv
-SQL_SA_PASSWORD=UnaClaveSegura_2026!
+JWT_KEY=UnaClaveJwtLargaYSeguraDeAlMenos32Caracteres
+SQL_SA_PASSWORD=UnaClaveSqlSegura_2026!
 RABBITMQ_USER=admin
 RABBITMQ_PASSWORD=OtraClaveSegura_2026!
 ```
 
-`.env` está excluido de Git. La contraseña de SQL Server debe cumplir sus requisitos de complejidad.
-
-## Comandos útiles
-
-Ver los logs:
-
 ```powershell
-docker compose logs -f
+docker compose up --build -d
+docker compose ps
 ```
 
-Detener conservando bases y colas:
+Cada microservicio usa una instancia SQL y volumen propios: `sqlserver-pacientes` / `PacientesDB` y `sqlserver-historial` / `HistorialClinicoDB`. Los scripts de inicialización están en [database](C:/Users/jordy/source/repos/MicroHolder/Microservicios/database).
+
+## Prueba JWT por Gateway
 
 ```powershell
-docker compose down
+$login = Invoke-RestMethod -Method Post http://localhost:5100/oauth/token `
+  -ContentType 'application/json' `
+  -Body '{"usuario":"usuario","contrasena":"ClinicaUser_2026!"}'
+$headers = @{ Authorization = "Bearer $($login.token)" }
+
+# Sin token: 401. Con token: 200.
+Invoke-WebRequest http://localhost:5100/historiales
+Invoke-RestMethod http://localhost:5100/historiales -Headers $headers
 ```
 
-Detener y eliminar también todos los datos persistidos:
+Credenciales de demostración: `usuario` / `ClinicaUser_2026!`; para eliminar use `administrador` / `ClinicaAdmin_2026!`.
+
+## Endpoints
+
+| Servicio | URL |
+|---|---|
+| Gateway | `http://localhost:5100/health` |
+| Token JWT | `POST http://localhost:5100/oauth/token` |
+| Pacientes | `http://localhost:5100/pacientes` |
+| Historial clínico | `http://localhost:5100/historiales` |
+| Swagger OAuthJWT | `http://localhost:5103/swagger` |
+| Swagger Pacientes | `http://localhost:5101/swagger` |
+| Swagger Historial | `http://localhost:5102/swagger` |
+
+## Azure
+
+Complete luego del despliegue:
+
+- Gateway: `<URL_PUBLICA_GATEWAY>`
+- OAuthJWT: `<URL_PUBLICA_OAUTHJWT>`
+- Pacientes: `<URL_PUBLICA_PACIENTES>`
+- Historial: `<URL_PUBLICA_HISTORIAL>`
+
+Las plantillas de credenciales y memoria de comandos están en [entregables/azure](C:/Users/jordy/source/repos/MicroHolder/Microservicios/entregables/azure). Después de la revisión elimine recursos:
 
 ```powershell
-docker compose down -v
+az group delete --name <NOMBRE_RESOURCE_GROUP> --yes --no-wait
 ```
-
-Después de usar `down -v`, el siguiente `up` volverá a crear las dos bases desde `database/init.sql`.
-
-## Subir a GitHub
-
-Desde esta misma carpeta:
-
-```powershell
-git init
-git add .
-git commit -m "Dockeriza microservicios de clínica"
-git branch -M main
-git remote add origin https://github.com/USUARIO/NOMBRE-REPOSITORIO.git
-git push -u origin main
-```
-
-Primero cree un repositorio vacío en GitHub, reemplace la URL por la suya y no agregue otro README desde GitHub.
-
-## Solución de problemas
-
-- Si un puerto está ocupado, cierre el programa o contenedor que lo utiliza y repita el comando de inicio.
-- Si cambia credenciales después del primer inicio, ejecute `docker compose down -v` y vuelva a levantar el proyecto.
-- Si una descarga o compilación falla, revise `docker compose logs` y confirme que Docker Desktop tenga conexión a Internet.
