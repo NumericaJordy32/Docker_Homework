@@ -1,4 +1,5 @@
 @gateway = https://api-gateway.happypond-6af05007.australiaeast.azurecontainerapps.io
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjbGluaWNhX3VzdWFyaW8iLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiY2xpbmljYV91c3VhcmlvIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiVXN1YXJpbyIsImV4cCI6MTc4ODg4NjQ4OCwiaXNzIjoiQ2xpbmljYS5PQXV0aEpXVCIsImF1ZCI6IkNsaW5pY2EuQ2xpZW50ZXMifQ.voYh6MkGWobH5cJ9nH-1zYqdDX_KNzVDTgAI5ifwWTw
 @pacienteId = 1
 @historialId = 1
 
@@ -7,8 +8,8 @@ POST {{gateway}}/oauth/token
 Content-Type: application/json
 
 {
-  "usuario": "<usuario-configurado-en-secreto-azure>",
-  "contrasena": "<contrasena-configurada-en-secreto-azure>"
+  "usuario": "clinica_usuario",
+  "contrasena": "U9!nF4#xR7@kP2$m"
 }
 
 ### Estado del gateway
@@ -17,6 +18,7 @@ GET {{gateway}}/health
 ### Crear paciente
 POST {{gateway}}/pacientes
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "cedula": "1755844436",
@@ -27,13 +29,16 @@ Content-Type: application/json
 
 ### Listar pacientes
 GET {{gateway}}/pacientes
+Authorization: Bearer {{token}}
 
 ### Buscar paciente por id
 GET {{gateway}}/pacientes/{{pacienteId}}
+Authorization: Bearer {{token}}
 
 ### Actualizar paciente
 PUT {{gateway}}/pacientes/{{pacienteId}}
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "cedula": "1000123456",
@@ -45,6 +50,7 @@ Content-Type: application/json
 ### Crear historial clínico
 POST {{gateway}}/historiales
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "idPaciente": {{pacienteId}},
@@ -55,13 +61,16 @@ Content-Type: application/json
 
 ### Listar historiales
 GET {{gateway}}/historiales
+Authorization: Bearer {{token}}
 
 ### Buscar historial por id
 GET {{gateway}}/historiales/{{historialId}}
+Authorization: Bearer {{token}}
 
 ### Actualizar historial
 PUT {{gateway}}/historiales/{{historialId}}
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "idPaciente": {{pacienteId}},
@@ -72,6 +81,8 @@ Content-Type: application/json
 
 ### Eliminar historial
 DELETE {{gateway}}/historiales/{{historialId}}
+Authorization: Bearer {{token}}
 
 ### Eliminar paciente
 DELETE {{gateway}}/pacientes/{{pacienteId}}
+Authorization: Bearer {{token}}
