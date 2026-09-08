@@ -114,6 +114,15 @@ En Azure, OAuthJWT, Pacientes e Historial usan referencias a secretos de Contain
 
 RabbitMQ no se expone públicamente: usa ingreso TCP interno de Azure Container Apps en el puerto 5672.
 
+### Publicación desde GitHub Actions
+
+El flujo `.github/workflows/publish-acr.yml` construye las cuatro imágenes, las publica en ACR y despliega las revisiones de Pacientes e Historial. Antes de ejecutarlo, configure en GitHub Actions los secretos (sin versionar valores):
+
+- `ACR_LOGIN_SERVER`: servidor de inicio de sesión del ACR.
+- `AZURE_CREDENTIALS`: credenciales JSON de un principal de servicio con permisos para publicar en ACR y actualizar las Container Apps del Resource Group.
+
+Cada ejecución publica una etiqueta corta del commit y actualiza Pacientes e Historial con esa etiqueta, evitando depender de `latest`.
+
 Las plantillas de credenciales y memoria de comandos están en [entregables/azure](C:/Users/jordy/source/repos/MicroHolder/Microservicios/entregables/azure). Después de la revisión elimine recursos:
 
 ```powershell

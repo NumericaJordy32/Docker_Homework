@@ -10,6 +10,7 @@ permissions:
 
 env:
   ACR_LOGIN_SERVER: ${{ secrets.ACR_LOGIN_SERVER }}
+  RESOURCE_GROUP: rg-clinica-aa-jordy-202609
 
 jobs:
   publish:
@@ -37,3 +38,14 @@ jobs:
               --tag "$ACR_LOGIN_SERVER/clinica/$service:latest" \
               "$context"
           done
+      - name: Deploy Pacientes and Historial revisions
+        run: |
+          tag="${GITHUB_SHA::7}"
+          az containerapp update \
+            --resource-group "$RESOURCE_GROUP" \
+            --name pacientes-api \
+            --image "$ACR_LOGIN_SERVER/clinica/pacientes-api:$tag"
+          az containerapp update \
+            --resource-group "$RESOURCE_GROUP" \
+            --name historial-clinico-api \
+            --image "$ACR_LOGIN_SERVER/clinica/historial-clinico-api:$tag"
