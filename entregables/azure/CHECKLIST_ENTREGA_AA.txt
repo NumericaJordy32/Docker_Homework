@@ -27,7 +27,8 @@ Pendiente antes de entregar
 [ ] Grabar video de maximo 5 minutos: token, Gateway, JWT, RabbitMQ y Azure.
 [x] Actualizar MEMORIA_COMANDOS_AZURE.md con los pasos realmente ejecutados, sin secretos.
 [x] Retirar contrasenas reales de archivos versionados: appsettings y ApiGateway.http usan marcadores; secretos reales quedan fuera de Git.
-[ ] Publicar imágenes nuevas de Pacientes e Historial con reintentos RabbitMQ. Bloqueado: Azure ACR Tasks fue rechazado por permisos; no se publicó ninguna imagen.
+[x] Publicar imágenes nuevas de Pacientes e Historial con reintentos RabbitMQ. GitHub Actions publicó la etiqueta `072d5f7` y ambas Container Apps fueron actualizadas manualmente a esa imagen.
+[ ] Corregir permisos del principal usado por `AZURE_CREDENTIALS` en GitHub Actions: la compilación/publicación funciona, pero el paso automático `az containerapp update` falló. El despliegue manual ya quedó aplicado.
 [ ] Mantener recursos hasta 13/09/2026 y luego eliminar el Resource Group para evitar cargos.
 
 Evidencias sugeridas

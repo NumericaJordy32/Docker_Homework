@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using System.Threading.Channels;
 using HistorialClinico.Api.Data;
 using HistorialClinico.Api.Dtos;
 using Microsoft.Data.SqlClient;
@@ -29,53 +30,56 @@ public interface IRabbitMqPublisher
 }
 
 internal sealed record DomainEvent<T>(Guid EventId, string EventType, DateTimeOffset OccurredAt, T Data);
+internal sealed record PendingMessage(string RoutingKey, string EventType, byte[] Body, BasicProperties Properties);
 
 internal sealed class RabbitMqPublisher(
     IOptions<RabbitMqOptions> options,
-    ILogger<RabbitMqPublisher> logger) : IRabbitMqPublisher, IAsyncDisposable
+    ILogger<RabbitMqPublisher> logger) : BackgroundService, IRabbitMqPublisher
 {
     private readonly RabbitMqOptions _options = options.Value;
-    private readonly SemaphoreSlim _gate = new(1, 1);
+    private readonly Channel<PendingMessage> _pending = Channel.CreateUnbounded<PendingMessage>();
     private IConnection? _connection;
     private IChannel? _channel;
 
-    public async Task PublishAsync<T>(string routingKey, string eventType, T data, CancellationToken cancellationToken = default)
+    public Task PublishAsync<T>(string routingKey, string eventType, T data, CancellationToken cancellationToken = default)
     {
         var message = new DomainEvent<T>(Guid.NewGuid(), eventType, DateTimeOffset.UtcNow, data);
         var body = JsonSerializer.SerializeToUtf8Bytes(message);
 
-        await _gate.WaitAsync(cancellationToken);
-        try
+        var properties = new BasicProperties
         {
-            var properties = new BasicProperties
-            {
-                ContentType = "application/json",
-                DeliveryMode = DeliveryModes.Persistent,
-                MessageId = message.EventId.ToString(),
-                Type = eventType
-            };
+            ContentType = "application/json",
+            DeliveryMode = DeliveryModes.Persistent,
+            MessageId = message.EventId.ToString(),
+            Type = eventType
+        };
 
-            for (var attempt = 1; attempt <= 5; attempt++)
+        if (!_pending.Writer.TryWrite(new PendingMessage(routingKey, eventType, body, properties)))
+            throw new InvalidOperationException("No fue posible encolar el evento de RabbitMQ.");
+
+        return Task.CompletedTask;
+    }
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        await foreach (var message in _pending.Reader.ReadAllAsync(stoppingToken))
+        {
+            while (!stoppingToken.IsCancellationRequested)
             {
                 try
                 {
-                    await EnsureConnectedAsync(cancellationToken);
-                    await _channel!.BasicPublishAsync(_options.Exchange, routingKey, false, properties, body, cancellationToken);
-                    return;
+                    await EnsureConnectedAsync(stoppingToken);
+                    await _channel!.BasicPublishAsync(_options.Exchange, message.RoutingKey, false, message.Properties, message.Body, stoppingToken);
+                    break;
                 }
-                catch (Exception ex) when (attempt < 5 && ex is not OperationCanceledException)
+                catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) { return; }
+                catch (Exception ex)
                 {
-                    logger.LogWarning(ex,
-                        "No fue posible publicar {EventType} en RabbitMQ. Reintento {Attempt}/5.",
-                        eventType, attempt);
+                    logger.LogWarning(ex, "No fue posible publicar {EventType}; se reintentará en 5 segundos.", message.EventType);
                     await ResetConnectionAsync();
-                    await Task.Delay(TimeSpan.FromSeconds(attempt), cancellationToken);
+                    await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
                 }
             }
-        }
-        finally
-        {
-            _gate.Release();
         }
     }
 
@@ -100,11 +104,6 @@ internal sealed class RabbitMqPublisher(
         _connection = null;
     }
 
-    public async ValueTask DisposeAsync()
-    {
-        await ResetConnectionAsync();
-        _gate.Dispose();
-    }
 }
 
 internal sealed class RabbitMqConsumer(
@@ -272,7 +271,9 @@ public static class RabbitMqServiceCollectionExtensions
             .Validate(x => !string.IsNullOrWhiteSpace(x.Exchange), "RabbitMq:Exchange es obligatorio")
             .Validate(x => !string.IsNullOrWhiteSpace(x.Queue), "RabbitMq:Queue es obligatoria")
             .ValidateOnStart();
-        services.AddSingleton<IRabbitMqPublisher, RabbitMqPublisher>();
+        services.AddSingleton<RabbitMqPublisher>();
+        services.AddSingleton<IRabbitMqPublisher>(sp => sp.GetRequiredService<RabbitMqPublisher>());
+        services.AddHostedService(sp => sp.GetRequiredService<RabbitMqPublisher>());
         services.AddSingleton<IPacienteEventInbox, PacienteEventInbox>();
         services.AddHostedService<RabbitMqConsumer>();
         return services;
