@@ -2,6 +2,14 @@
 
 Trabajo Autónomo de Aplicaciones Distribuidas. Contiene Pacientes, Historial Clínico, API Gateway, RabbitMQ y `OAuthJWT.Api`; SQL Server es la infraestructura de persistencia.
 
+## Servicios
+
+- `OAuthJWT.Api`: autentica usuarios y emite los JWT con issuer `Clinica.OAuthJWT`.
+- `Pacientes.Api`: CRUD protegido de pacientes y publicación de eventos `paciente.*`.
+- `HistorialClinico.Api`: CRUD protegido de historiales y consumo de eventos de pacientes.
+- `ApiGateway`: punto público único y reverse proxy para OAuth, Pacientes e Historial.
+- `rabbitmq`: broker de eventos en el exchange `clinica.events`.
+
 ## Arquitectura
 
 | Componente | Dirección o puerto |
@@ -22,13 +30,17 @@ OAuthJWT es el único emisor de tokens. Las APIs de negocio validan JWT y requie
 
 ## Ejecución local
 
-Requiere Docker Desktop. Cree `.env` (no se versiona):
+Requiere Docker Desktop. Copie `.env.example` como `.env` (no se versiona) y complete valores seguros:
 
 ```dotenv
-JWT_KEY=UnaClaveJwtLargaYSeguraDeAlMenos32Caracteres
-SQL_SA_PASSWORD=UnaClaveSqlSegura_2026!
-RABBITMQ_USER=admin
-RABBITMQ_PASSWORD=OtraClaveSegura_2026!
+JWT_KEY=<JWT_KEY_LOCAL_DE_MINIMO_32_CARACTERES>
+SQL_SA_PASSWORD=<CONTRASENA_SQL_LOCAL_SEGURA>
+RABBITMQ_USER=<USUARIO_RABBITMQ_LOCAL>
+RABBITMQ_PASSWORD=<CONTRASENA_RABBITMQ_LOCAL_SEGURA>
+OAUTH_USER=<USUARIO_OAUTH_LOCAL>
+OAUTH_USER_PASSWORD=<CONTRASENA_USUARIO_OAUTH_LOCAL_SEGURA>
+OAUTH_ADMIN=<USUARIO_ADMIN_LOCAL>
+OAUTH_ADMIN_PASSWORD=<CONTRASENA_ADMIN_OAUTH_LOCAL_SEGURA>
 ```
 
 ```powershell
@@ -43,7 +55,7 @@ Cada microservicio usa una instancia SQL y volumen propios: `sqlserver-pacientes
 ```powershell
 $login = Invoke-RestMethod -Method Post http://localhost:5100/oauth/token `
   -ContentType 'application/json' `
-  -Body '{"usuario":"usuario","contrasena":"ClinicaUser_2026!"}'
+  -Body '{"usuario":"<OAUTH_USER>","contrasena":"<OAUTH_USER_PASSWORD>"}'
 $headers = @{ Authorization = "Bearer $($login.token)" }
 
 # Sin token: 401. Con token: 200.
@@ -51,7 +63,7 @@ Invoke-WebRequest http://localhost:5100/historiales
 Invoke-RestMethod http://localhost:5100/historiales -Headers $headers
 ```
 
-Credenciales de demostración: `usuario` / `ClinicaUser_2026!`; para eliminar use `administrador` / `ClinicaAdmin_2026!`.
+Use las credenciales definidas en su `.env` local. No publique usuarios, contraseñas, JWT keys ni cadenas de conexión.
 
 ## Endpoints
 
@@ -67,12 +79,40 @@ Credenciales de demostración: `usuario` / `ClinicaUser_2026!`; para eliminar us
 
 ## Azure
 
-Complete luego del despliegue:
+Gateway público: https://api-gateway.happypond-6af05007.australiaeast.azurecontainerapps.io
 
-- Gateway: `<URL_PUBLICA_GATEWAY>`
-- OAuthJWT: `<URL_PUBLICA_OAUTHJWT>`
-- Pacientes: `<URL_PUBLICA_PACIENTES>`
-- Historial: `<URL_PUBLICA_HISTORIAL>`
+| Servicio | URL pública / estado |
+|---|---|
+| Gateway | `https://api-gateway.happypond-6af05007.australiaeast.azurecontainerapps.io` |
+| Health Gateway | `https://api-gateway.happypond-6af05007.australiaeast.azurecontainerapps.io/health` |
+| Swagger OAuthJWT | `https://oauth-jwt-api.happypond-6af05007.australiaeast.azurecontainerapps.io/swagger` |
+| Swagger Pacientes | `https://pacientes-api.happypond-6af05007.australiaeast.azurecontainerapps.io/swagger` |
+| Swagger Historial | `https://historial-clinico-api.happypond-6af05007.australiaeast.azurecontainerapps.io/swagger` (puede requerir unos minutos de propagación) |
+
+Las rutas públicas consumibles están documentadas en `entregables/azure/RUTAS_Y_CREDENCIALES_AZURE.txt`. Las credenciales reales solo deben existir en el archivo privado ignorado por Git y en secretos de Azure Container Apps.
+
+En Azure, OAuthJWT, Pacientes e Historial usan referencias a secretos de Container Apps. Las APIs de negocio usan el ingreso TCP interno de RabbitMQ en el puerto 5672; el Gateway usa los FQDN HTTPS públicos de las Container Apps como destinos.
+
+### Rutas públicas de Azure
+
+| Componente | Ruta pública |
+|---|---|
+| Gateway health | `https://api-gateway.happypond-6af05007.australiaeast.azurecontainerapps.io/health` |
+| Gateway: token | `POST https://api-gateway.happypond-6af05007.australiaeast.azurecontainerapps.io/oauth/token` |
+| Gateway: pacientes | `https://api-gateway.happypond-6af05007.australiaeast.azurecontainerapps.io/pacientes` |
+| Gateway: historiales | `https://api-gateway.happypond-6af05007.australiaeast.azurecontainerapps.io/historiales` |
+| Gateway: eventos de pacientes | `https://api-gateway.happypond-6af05007.australiaeast.azurecontainerapps.io/historiales/eventos-pacientes` |
+| OAuthJWT health | `https://oauth-jwt-api.happypond-6af05007.australiaeast.azurecontainerapps.io/health` |
+| OAuthJWT token directo | `POST https://oauth-jwt-api.happypond-6af05007.australiaeast.azurecontainerapps.io/api/oauth/token` |
+| Swagger OAuthJWT | `https://oauth-jwt-api.happypond-6af05007.australiaeast.azurecontainerapps.io/swagger` |
+| Pacientes health | `https://pacientes-api.happypond-6af05007.australiaeast.azurecontainerapps.io/health` |
+| Pacientes API directa | `https://pacientes-api.happypond-6af05007.australiaeast.azurecontainerapps.io/api/pacientes` |
+| Swagger Pacientes | `https://pacientes-api.happypond-6af05007.australiaeast.azurecontainerapps.io/swagger` |
+| Historial health | `https://historial-clinico-api.happypond-6af05007.australiaeast.azurecontainerapps.io/health` |
+| Historial API directa | `https://historial-clinico-api.happypond-6af05007.australiaeast.azurecontainerapps.io/api/historiales` |
+| Swagger Historial | `https://historial-clinico-api.happypond-6af05007.australiaeast.azurecontainerapps.io/swagger` |
+
+RabbitMQ no se expone públicamente: usa ingreso TCP interno de Azure Container Apps en el puerto 5672.
 
 Las plantillas de credenciales y memoria de comandos están en [entregables/azure](C:/Users/jordy/source/repos/MicroHolder/Microservicios/entregables/azure). Después de la revisión elimine recursos:
 

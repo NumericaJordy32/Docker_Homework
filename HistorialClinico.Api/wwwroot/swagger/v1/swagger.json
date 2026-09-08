@@ -1,7 +1,7 @@
 {
   "openapi": "3.0.1",
   "info": { "title": "Microservicio de Historial Clínico", "version": "v1" },
-  "servers": [{ "url": "http://localhost:5102" }],
+  "servers": [{ "url": "/" }],
   "paths": {
     "/api/historiales": {
       "get": {

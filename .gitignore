@@ -4,3 +4,8 @@
 *.user
 *.suo
 .env
+.env.*
+!.env.example
+entregables/azure/CLAVES_AZURE_PRIVADAS.txt
+entregables/azure/*_PRIVADAS.txt
+deploy-apis-*.zip

@@ -1,4 +1,4 @@
-@gateway = http://localhost:5100
+@gateway = https://api-gateway.happypond-6af05007.australiaeast.azurecontainerapps.io
 @pacienteId = 1
 @historialId = 1
 
@@ -7,8 +7,8 @@ POST {{gateway}}/oauth/token
 Content-Type: application/json
 
 {
-  "usuario": "usuario",
-  "contrasena": "ClinicaUser_2026!"
+  "usuario": "<usuario-configurado-en-secreto-azure>",
+  "contrasena": "<contrasena-configurada-en-secreto-azure>"
 }
 
 ### Estado del gateway

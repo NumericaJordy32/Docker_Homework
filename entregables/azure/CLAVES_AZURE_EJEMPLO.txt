@@ -2,39 +2,43 @@ PLANTILLA PRIVADA DE CREDENCIALES - CLINICA
 Copiar este archivo fuera del repositorio y llenar los campos entre < >.
 No subir claves reales a GitHub.
 
-1. AZURE
+1. AZURE SQL
 Suscripcion: Azure subscription 1
 Resource Group: rg-clinica-aa-jordy-202609
 Region SQL: Australia East
 ACR: acrclinicajordy202609.azurecr.io
 Servidor SQL: sqlclinicajordy202609.database.windows.net
-Base de datos Pacientes: PacientesDB
+Base de datos Pacientes: ClinicaDB
 Base de datos Historial: HistorialClinicoDB
 Usuario SQL: sqladminclinica
-Contrasena SQL: <ESCRIBIR_AQUI_LA_CLAVE_CREADA_EN_AZURE>
+Contrasena SQL: <CONTRASENA_SQL_EXISTENTE>
 
 2. OAUTH / JWT
 URL local OAuth: http://localhost:5103/api/oauth/token
 URL mediante Gateway: http://localhost:5100/oauth/api/oauth/token
-Usuario normal: usuario
-Contrasena usuario: <CONTRASENA_OAUTH_USUARIO_LOCAL>
+Usuario normal: <USUARIO_OAUTH>
+Contrasena usuario: <CONTRASENA_USUARIO_OAUTH_SEGURA>
 Rol: Usuario
-Usuario administrador: administrador
-Contrasena administrador: <CONTRASENA_OAUTH_ADMIN_LOCAL>
+Usuario administrador: <USUARIO_ADMIN_OAUTH>
+Contrasena administrador: <CONTRASENA_ADMIN_OAUTH_SEGURA>
 Rol: Administrador
 JWT Issuer: Clinica.OAuthJWT
 JWT Audience: Clinica.Clientes
-JWT Key: <CLAVE_JWT_DE_AL_MENOS_32_CARACTERES>
+JWT Key: <JWT_KEY_UNICA_DE_MINIMO_32_CARACTERES>
 
 3. RABBITMQ
 Host local: localhost
 Puerto AMQP: 5672
 Puerto panel: 15672
-Usuario RabbitMQ: admin
-Contrasena RabbitMQ: <CONTRASENA_RABBITMQ>
+Usuario RabbitMQ: <USUARIO_RABBITMQ>
+Contrasena RabbitMQ: <CONTRASENA_RABBITMQ_SEGURA>
 Panel local: http://localhost:15672
 
-4. ACR (SOLO SI SE PUBLICAN IMAGENES)
+4. APLICACION
+Las claves reales se guardan solo en CLAVES_AZURE_PRIVADAS.txt, ignorado por Git.
+Configurar como secretos de Azure Container Apps; no usar texto plano para produccion.
+
+5. ACR (SOLO SI SE PUBLICAN IMAGENES)
 Servidor: acrclinicajordy202609.azurecr.io
 Usuario ACR: acrclinicajordy202609
 Contrasena ACR: <CLAVE_ADMIN_AZURE_CONTAINER_REGISTRY>

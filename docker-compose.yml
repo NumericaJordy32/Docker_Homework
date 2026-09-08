@@ -6,7 +6,7 @@ services:
     container_name: clinica-sqlserver-pacientes
     environment:
       ACCEPT_EULA: "Y"
-      MSSQL_SA_PASSWORD: "${SQL_SA_PASSWORD:-Clinica_2026!}"
+      MSSQL_SA_PASSWORD: "${SQL_SA_PASSWORD:?Defina SQL_SA_PASSWORD en .env}"
     ports:
       - "1433:1433"
     volumes:
@@ -25,7 +25,7 @@ services:
     image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: clinica-pacientes-database-init
     environment:
-      MSSQL_SA_PASSWORD: "${SQL_SA_PASSWORD:-Clinica_2026!}"
+      MSSQL_SA_PASSWORD: "${SQL_SA_PASSWORD:?Defina SQL_SA_PASSWORD en .env}"
     volumes:
       - ./database/pacientes-init.sql:/scripts/init.sql:ro
     entrypoint:
@@ -44,7 +44,7 @@ services:
     container_name: clinica-sqlserver-historial
     environment:
       ACCEPT_EULA: "Y"
-      MSSQL_SA_PASSWORD: "${SQL_SA_PASSWORD:-Clinica_2026!}"
+      MSSQL_SA_PASSWORD: "${SQL_SA_PASSWORD:?Defina SQL_SA_PASSWORD en .env}"
     ports:
       - "1434:1433"
     volumes:
@@ -63,7 +63,7 @@ services:
     image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: clinica-historial-database-init
     environment:
-      MSSQL_SA_PASSWORD: "${SQL_SA_PASSWORD:-Clinica_2026!}"
+      MSSQL_SA_PASSWORD: "${SQL_SA_PASSWORD:?Defina SQL_SA_PASSWORD en .env}"
     volumes:
       - ./database/historial-init.sql:/scripts/init.sql:ro
     entrypoint:
@@ -72,7 +72,7 @@ services:
       - |
         set -u
         for attempt in $$(seq 1 30); do
-          if /opt/mssql-tools18/bin/sqlcmd -C -b -S sqlserver -U sa \
+          if /opt/mssql-tools18/bin/sqlcmd -C -b -S sqlserver-historial -U sa \
             -P "$$MSSQL_SA_PASSWORD" -i /scripts/init.sql; then
             echo "SQL Server inicializado correctamente."
             exit 0
@@ -92,8 +92,8 @@ services:
     container_name: clinica-rabbitmq
     hostname: rabbitmq
     environment:
-      RABBITMQ_DEFAULT_USER: "${RABBITMQ_USER:-admin}"
-      RABBITMQ_DEFAULT_PASS: "${RABBITMQ_PASSWORD:-root12345}"
+      RABBITMQ_DEFAULT_USER: "${RABBITMQ_USER:?Defina RABBITMQ_USER en .env}"
+      RABBITMQ_DEFAULT_PASS: "${RABBITMQ_PASSWORD:?Defina RABBITMQ_PASSWORD en .env}"
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -114,7 +114,11 @@ services:
     container_name: clinica-oauth-jwt-api
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      Jwt__Key: "${JWT_KEY:-Clinica_Jwt_Development_Key_2026_Change_Me!}"
+      Jwt__Key: "${JWT_KEY:?Defina JWT_KEY en .env}"
+      Jwt__Users__0__Username: "${OAUTH_USER:?Defina OAUTH_USER en .env}"
+      Jwt__Users__0__Password: "${OAUTH_USER_PASSWORD:?Defina OAUTH_USER_PASSWORD en .env}"
+      Jwt__Users__1__Username: "${OAUTH_ADMIN:?Defina OAUTH_ADMIN en .env}"
+      Jwt__Users__1__Password: "${OAUTH_ADMIN_PASSWORD:?Defina OAUTH_ADMIN_PASSWORD en .env}"
     ports:
       - "5103:8080"
     restart: unless-stopped
@@ -127,12 +131,12 @@ services:
     container_name: clinica-pacientes-api
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__PacientesDB: "Server=sqlserver-pacientes,1433;Database=PacientesDB;User Id=sa;Password=${SQL_SA_PASSWORD:-Clinica_2026!};TrustServerCertificate=True;Encrypt=False"
+      ConnectionStrings__PacientesDB: "Server=sqlserver-pacientes,1433;Database=PacientesDB;User Id=sa;Password=${SQL_SA_PASSWORD:?Defina SQL_SA_PASSWORD en .env};TrustServerCertificate=True;Encrypt=False"
       RabbitMq__HostName: rabbitmq
       RabbitMq__Port: 5672
-      RabbitMq__UserName: "${RABBITMQ_USER:-admin}"
-      RabbitMq__Password: "${RABBITMQ_PASSWORD:-root12345}"
-      Jwt__Key: "${JWT_KEY:-Clinica_Jwt_Development_Key_2026_Change_Me!}"
+      RabbitMq__UserName: "${RABBITMQ_USER:?Defina RABBITMQ_USER en .env}"
+      RabbitMq__Password: "${RABBITMQ_PASSWORD:?Defina RABBITMQ_PASSWORD en .env}"
+      Jwt__Key: "${JWT_KEY:?Defina JWT_KEY en .env}"
     ports:
       - "5101:8080"
     depends_on:
@@ -150,12 +154,12 @@ services:
     container_name: clinica-historial-clinico-api
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__HistorialClinicoDB: "Server=sqlserver-historial,1433;Database=HistorialClinicoDB;User Id=sa;Password=${SQL_SA_PASSWORD:-Clinica_2026!};TrustServerCertificate=True;Encrypt=False"
+      ConnectionStrings__HistorialClinicoDB: "Server=sqlserver-historial,1433;Database=HistorialClinicoDB;User Id=sa;Password=${SQL_SA_PASSWORD:?Defina SQL_SA_PASSWORD en .env};TrustServerCertificate=True;Encrypt=False"
       RabbitMq__HostName: rabbitmq
       RabbitMq__Port: 5672
-      RabbitMq__UserName: "${RABBITMQ_USER:-admin}"
-      RabbitMq__Password: "${RABBITMQ_PASSWORD:-root12345}"
-      Jwt__Key: "${JWT_KEY:-Clinica_Jwt_Development_Key_2026_Change_Me!}"
+      RabbitMq__UserName: "${RABBITMQ_USER:?Defina RABBITMQ_USER en .env}"
+      RabbitMq__Password: "${RABBITMQ_PASSWORD:?Defina RABBITMQ_PASSWORD en .env}"
+      Jwt__Key: "${JWT_KEY:?Defina JWT_KEY en .env}"
     ports:
       - "5102:8080"
     depends_on:

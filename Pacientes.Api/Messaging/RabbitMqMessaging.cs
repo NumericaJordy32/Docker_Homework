@@ -9,10 +9,10 @@ namespace Pacientes.Api.Messaging;
 public sealed class RabbitMqOptions
 {
     public const string SectionName = "RabbitMq";
-    public string HostName { get; set; } = "localhost";
+    public string HostName { get; set; } = "rabbitmq";
     public int Port { get; set; } = 5672;
     public string UserName { get; set; } = "admin";
-    public string Password { get; set; } = "root12345";
+    public string Password { get; set; } = string.Empty;
     public string VirtualHost { get; set; } = "/";
     public string Exchange { get; set; } = "clinica.events";
     public string Queue { get; set; } = "clinica.pacientes";
@@ -27,7 +27,9 @@ public interface IRabbitMqPublisher
 
 internal sealed record DomainEvent<T>(Guid EventId, string EventType, DateTimeOffset OccurredAt, T Data);
 
-internal sealed class RabbitMqPublisher(IOptions<RabbitMqOptions> options) : IRabbitMqPublisher, IAsyncDisposable
+internal sealed class RabbitMqPublisher(
+    IOptions<RabbitMqOptions> options,
+    ILogger<RabbitMqPublisher> logger) : IRabbitMqPublisher, IAsyncDisposable
 {
     private readonly RabbitMqOptions _options = options.Value;
     private readonly SemaphoreSlim _gate = new(1, 1);
@@ -42,7 +44,6 @@ internal sealed class RabbitMqPublisher(IOptions<RabbitMqOptions> options) : IRa
         await _gate.WaitAsync(cancellationToken);
         try
         {
-            await EnsureConnectedAsync(cancellationToken);
             var properties = new BasicProperties
             {
                 ContentType = "application/json",
@@ -51,7 +52,23 @@ internal sealed class RabbitMqPublisher(IOptions<RabbitMqOptions> options) : IRa
                 Type = eventType
             };
 
-            await _channel!.BasicPublishAsync(_options.Exchange, routingKey, false, properties, body, cancellationToken);
+            for (var attempt = 1; attempt <= 5; attempt++)
+            {
+                try
+                {
+                    await EnsureConnectedAsync(cancellationToken);
+                    await _channel!.BasicPublishAsync(_options.Exchange, routingKey, false, properties, body, cancellationToken);
+                    return;
+                }
+                catch (Exception ex) when (attempt < 5 && ex is not OperationCanceledException)
+                {
+                    logger.LogWarning(ex,
+                        "No fue posible publicar {EventType} en RabbitMQ. Reintento {Attempt}/5.",
+                        eventType, attempt);
+                    await ResetConnectionAsync();
+                    await Task.Delay(TimeSpan.FromSeconds(attempt), cancellationToken);
+                }
+            }
         }
         finally
         {
@@ -72,10 +89,17 @@ internal sealed class RabbitMqPublisher(IOptions<RabbitMqOptions> options) : IRa
         await _channel.ExchangeDeclareAsync(_options.Exchange, ExchangeType.Topic, true, false, cancellationToken: cancellationToken);
     }
 
-    public async ValueTask DisposeAsync()
+    private async Task ResetConnectionAsync()
     {
         if (_channel is not null) await _channel.DisposeAsync();
         if (_connection is not null) await _connection.DisposeAsync();
+        _channel = null;
+        _connection = null;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await ResetConnectionAsync();
         _gate.Dispose();
     }
 }

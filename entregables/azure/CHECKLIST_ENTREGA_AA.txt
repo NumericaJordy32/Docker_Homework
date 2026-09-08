@@ -1,0 +1,39 @@
+CHECKLIST - TRABAJO AUTONOMO AA APLICACIONES DISTRIBUIDAS
+
+Estado confirmado
+[x] Cinco componentes desplegados: OAuthJWT, Pacientes, Historial Clinico, RabbitMQ y API Gateway.
+[x] ACR con las cuatro imagenes de la aplicacion.
+[x] Dos bases reales: ClinicaDB (Pacientes) y HistorialClinicoDB (Historial).
+[x] Tablas Paciente e HistorialClinico creadas.
+[x] API Gateway publico: https://api-gateway.happypond-6af05007.australiaeast.azurecontainerapps.io
+[x] Docker Compose incluye los cinco componentes.
+[x] CLAVES_AZURE_EJEMPLO.txt y memoria de Azure existen.
+[x] Credenciales privadas excluidas del repositorio mediante .gitignore.
+[x] README actualizado con Gateway público, variables locales y rutas.
+
+Pendiente antes de entregar
+[x] Probar /health del Gateway desde Internet.
+[x] Configurar ingreso externo y registrar Swagger de OAuthJWT, Pacientes e Historial en RUTAS_Y_CREDENCIALES_AZURE.txt.
+[ ] Abrir y comprobar los tres Swagger desde Internet cuando Azure termine de propagar la revision de Historial.
+[x] Obtener un JWT desde OAuthJWT: respuesta 200 y rol emitido. La ruta `/oauth/token` del Gateway fue validada con un cuerpo vacío (400); falta capturar un token válido a través del Gateway.
+[x] Crear secretos en Azure Container Apps y configurar la misma Jwt__Key en OAuthJWT, Pacientes e Historial Clinico.
+[x] Configurar en Azure los nuevos usuario/contrasena de OAuth y RabbitMQ. Se mantuvo la contrasena SQL existente.
+[x] Confirmar RabbitMQ Running con una replica; OAuthJWT, Pacientes, Historial y Gateway se configuraron con mínimo 1 réplica para evitar arranque en frío.
+[x] Probar GET sin token en Pacientes: respuesta 401 con WWW-Authenticate: Bearer.
+[x] Probar GET con JWT válido: respuesta 200 confirmada tras corregir la clave configurada.
+[ ] Crear/actualizar un paciente y demostrar evento RabbitMQ en Historial.
+[x] Corregir destinos del Gateway: se reemplazaron los nombres internos por los FQDN HTTPS públicos de Pacientes, Historial y OAuthJWT. `/pacientes` y `/historiales` responden 401 sin token, no 404.
+[x] Agregar en README las URL publicas, rutas, arquitectura y prueba JWT.
+[ ] Grabar video de maximo 5 minutos: token, Gateway, JWT, RabbitMQ y Azure.
+[x] Actualizar MEMORIA_COMANDOS_AZURE.md con los pasos realmente ejecutados, sin secretos.
+[x] Retirar contrasenas reales de archivos versionados: appsettings y ApiGateway.http usan marcadores; secretos reales quedan fuera de Git.
+[ ] Publicar imágenes nuevas de Pacientes e Historial con reintentos RabbitMQ. Bloqueado: Azure ACR Tasks fue rechazado por permisos; no se publicó ninguna imagen.
+[ ] Mantener recursos hasta 13/09/2026 y luego eliminar el Resource Group para evitar cargos.
+
+Evidencias sugeridas
+[ ] Captura de Container Apps con las cinco revisiones Running.
+[ ] Captura de ACR con las cuatro imagenes.
+[ ] Captura de SQL con las dos bases y tablas.
+[x] Captura de 401 sin Bearer token y 200 con Bearer token.
+[x] Captura de Gateway: health 200 y rutas protegidas 401 sin token.
+[ ] Captura del panel o logs de RabbitMQ.
