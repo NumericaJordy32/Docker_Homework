@@ -65,6 +65,32 @@ Invoke-RestMethod http://localhost:5100/historiales -Headers $headers
 
 Use las credenciales definidas en su `.env` local. No publique usuarios, contraseñas, JWT keys ni cadenas de conexión.
 
+## Demostración para entrega
+
+Antes de grabar, confirme que todos los contenedores estén activos y abra estas pestañas (no muestran secretos):
+
+```powershell
+docker compose ps
+Start-Process http://localhost:5100
+Start-Process http://localhost:5101/swagger
+Start-Process http://localhost:5102/swagger
+Start-Process http://localhost:5103/swagger
+Start-Process http://localhost:15672
+```
+
+En RabbitMQ Management ingrese únicamente con las credenciales locales de `.env`; no las muestre en la grabación. La secuencia sugerida, con comandos reutilizables, está en [GUIÓN_VIDEO_DEMO.md](C:/Users/jordy/source/repos/MicroHolder/Microservicios/entregables/GUIÓN_VIDEO_DEMO.md) y en la [memoria de comandos](C:/Users/jordy/source/repos/MicroHolder/Microservicios/entregables/azure/MEMORIA_COMANDOS_AZURE.md).
+
+Para obtener un JWT durante la demo:
+
+```powershell
+$login = Invoke-RestMethod -Method Post http://localhost:5100/oauth/token `
+  -ContentType 'application/json' `
+  -Body (@{ usuario = '<OAUTH_USER>'; contrasena = '<OAUTH_USER_PASSWORD>' } | ConvertTo-Json)
+$headers = @{ Authorization = "Bearer $($login.token)" }
+```
+
+Después, ejecute los `GET` protegidos con `$headers` o autorice en Swagger con `Bearer <token>`. Cree un paciente antes de crear un historial, y muestre en RabbitMQ la cola o los intercambios asociados a `clinica.events` para evidenciar la mensajería asíncrona.
+
 ## Endpoints
 
 | Servicio | URL |
