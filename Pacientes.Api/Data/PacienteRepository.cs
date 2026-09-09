@@ -15,7 +15,7 @@ public sealed class PacienteRepository(IConfiguration configuration) : IPaciente
         var result = new List<Paciente>();
         await using var connection = new SqlConnection(_connectionString);
         await using var command = new SqlCommand("SELECT IdPaciente, Cedula, Nombre, Apellido, Direccion FROM Paciente ORDER BY IdPaciente", connection);
-        await connection.OpenAsync(ct);
+        await connection.OpenWithRetryAsync(ct);
         await using var reader = await command.ExecuteReaderAsync(ct);
         while (await reader.ReadAsync(ct)) result.Add(Map(reader));
         return result;
@@ -26,7 +26,7 @@ public sealed class PacienteRepository(IConfiguration configuration) : IPaciente
         await using var connection = new SqlConnection(_connectionString);
         await using var command = new SqlCommand("SELECT IdPaciente, Cedula, Nombre, Apellido, Direccion FROM Paciente WHERE IdPaciente=@Id", connection);
         command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
-        await connection.OpenAsync(ct);
+        await connection.OpenWithRetryAsync(ct);
         await using var reader = await command.ExecuteReaderAsync(ct);
         return await reader.ReadAsync(ct) ? Map(reader) : null;
     }
@@ -41,7 +41,7 @@ public sealed class PacienteRepository(IConfiguration configuration) : IPaciente
         await using var connection = new SqlConnection(_connectionString);
         await using var command = new SqlCommand(sql, connection);
         AddParameters(command, request);
-        await connection.OpenAsync(ct);
+        await connection.OpenWithRetryAsync(ct);
         await using var reader = await command.ExecuteReaderAsync(ct);
         await reader.ReadAsync(ct);
         return Map(reader);
@@ -54,7 +54,7 @@ public sealed class PacienteRepository(IConfiguration configuration) : IPaciente
         await using var command = new SqlCommand(sql, connection);
         AddParameters(command, request);
         command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
-        await connection.OpenAsync(ct);
+        await connection.OpenWithRetryAsync(ct);
         return await command.ExecuteNonQueryAsync(ct) > 0;
     }
 
@@ -63,7 +63,7 @@ public sealed class PacienteRepository(IConfiguration configuration) : IPaciente
         await using var connection = new SqlConnection(_connectionString);
         await using var command = new SqlCommand("DELETE FROM Paciente WHERE IdPaciente=@Id", connection);
         command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
-        await connection.OpenAsync(ct);
+        await connection.OpenWithRetryAsync(ct);
         return await command.ExecuteNonQueryAsync(ct) > 0;
     }
 

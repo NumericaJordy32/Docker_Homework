@@ -1,6 +1,6 @@
 @gateway = https://api-gateway.happypond-6af05007.australiaeast.azurecontainerapps.io
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjbGluaWNhX3VzdWFyaW8iLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiY2xpbmljYV91c3VhcmlvIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiVXN1YXJpbyIsImV4cCI6MTc4ODg4NjQ4OCwiaXNzIjoiQ2xpbmljYS5PQXV0aEpXVCIsImF1ZCI6IkNsaW5pY2EuQ2xpZW50ZXMifQ.voYh6MkGWobH5cJ9nH-1zYqdDX_KNzVDTgAI5ifwWTw
-@pacienteId = 1
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjbGluaWNhX2FkbWluIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZSI6ImNsaW5pY2FfYWRtaW4iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBZG1pbmlzdHJhZG9yIiwiZXhwIjoxNzg4OTI0NDEwLCJpc3MiOiJDbGluaWNhLk9BdXRoSldUIiwiYXVkIjoiQ2xpbmljYS5DbGllbnRlcyJ9.DAwaC_6t6E9y1ZUCAI-WKFsmM8QyFyuZgLZopsXFDMQ
+@pacienteId = 10
 @historialId = 1
 
 ### Obtener token JWT (servicio independiente OAuthJWT)
@@ -8,8 +8,8 @@ POST {{gateway}}/oauth/token
 Content-Type: application/json
 
 {
-  "usuario": "clinica_usuario",
-  "contrasena": "U9!nF4#xR7@kP2$m"
+  "usuario": "clinica_admin",
+  "contrasena": "A6@wL8!qT3#yM5$v"
 }
 
 ### Estado del gateway
@@ -21,7 +21,7 @@ Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-  "cedula": "1755844436",
+  "cedula": "1755844442", 
   "nombre": "Jordy",
   "apellido": "Prado",
   "direccion": "Calle 10 # 20-30"
@@ -41,8 +41,8 @@ Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-  "cedula": "1000123456",
-  "nombre": "Ana María",
+  "cedula": "100184568524",
+  "nombre": "Melissa Ibarra",
   "apellido": "García",
   "direccion": "Carrera 5 # 11-22"
 }

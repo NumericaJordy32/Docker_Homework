@@ -15,7 +15,7 @@ public sealed class HistorialRepository(IConfiguration configuration) : IHistori
         var result = new List<Historial>();
         await using var connection = new SqlConnection(_connectionString);
         await using var command = new SqlCommand("SELECT IdHistorialClinico, IdPaciente, NumHistoria, Diagnostico, Tratamiento, Fecha FROM HistorialClinico ORDER BY IdHistorialClinico", connection);
-        await connection.OpenAsync(ct);
+        await connection.OpenWithRetryAsync(ct);
         await using var reader = await command.ExecuteReaderAsync(ct);
         while (await reader.ReadAsync(ct)) result.Add(Map(reader));
         return result;
@@ -26,7 +26,7 @@ public sealed class HistorialRepository(IConfiguration configuration) : IHistori
         await using var connection = new SqlConnection(_connectionString);
         await using var command = new SqlCommand("SELECT IdHistorialClinico, IdPaciente, NumHistoria, Diagnostico, Tratamiento, Fecha FROM HistorialClinico WHERE IdHistorialClinico=@Id", connection);
         command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
-        await connection.OpenAsync(ct);
+        await connection.OpenWithRetryAsync(ct);
         await using var reader = await command.ExecuteReaderAsync(ct);
         return await reader.ReadAsync(ct) ? Map(reader) : null;
     }
@@ -36,7 +36,7 @@ public sealed class HistorialRepository(IConfiguration configuration) : IHistori
         await using var connection = new SqlConnection(_connectionString);
         await using var command = new SqlCommand("SELECT IdHistorialClinico, IdPaciente, NumHistoria, Diagnostico, Tratamiento, Fecha FROM HistorialClinico WHERE NumHistoria=@NumHistoria", connection);
         command.Parameters.Add("@NumHistoria", SqlDbType.VarChar, 30).Value = $"AUTO-{patientId:D8}";
-        await connection.OpenAsync(ct);
+        await connection.OpenWithRetryAsync(ct);
         await using var reader = await command.ExecuteReaderAsync(ct);
         return await reader.ReadAsync(ct) ? Map(reader) : null;
     }
@@ -51,7 +51,7 @@ public sealed class HistorialRepository(IConfiguration configuration) : IHistori
         await using var connection = new SqlConnection(_connectionString);
         await using var command = new SqlCommand(sql, connection);
         AddParameters(command, request);
-        await connection.OpenAsync(ct);
+        await connection.OpenWithRetryAsync(ct);
         await using var reader = await command.ExecuteReaderAsync(ct);
         await reader.ReadAsync(ct);
         return Map(reader);
@@ -64,7 +64,7 @@ public sealed class HistorialRepository(IConfiguration configuration) : IHistori
         await using var command = new SqlCommand(sql, connection);
         AddParameters(command, request);
         command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
-        await connection.OpenAsync(ct);
+        await connection.OpenWithRetryAsync(ct);
         return await command.ExecuteNonQueryAsync(ct) > 0;
     }
 
