@@ -1,6 +1,6 @@
 @gateway = https://api-gateway.happypond-6af05007.australiaeast.azurecontainerapps.io
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjbGluaWNhX2FkbWluIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZSI6ImNsaW5pY2FfYWRtaW4iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBZG1pbmlzdHJhZG9yIiwiZXhwIjoxNzg4OTI0NDEwLCJpc3MiOiJDbGluaWNhLk9BdXRoSldUIiwiYXVkIjoiQ2xpbmljYS5DbGllbnRlcyJ9.DAwaC_6t6E9y1ZUCAI-WKFsmM8QyFyuZgLZopsXFDMQ
-@pacienteId = 10
+@token = PON-TU-TOKEN-AQUI
+@pacienteId = 9
 @historialId = 1
 
 ### Obtener token JWT (servicio independiente OAuthJWT)
@@ -8,8 +8,8 @@ POST {{gateway}}/oauth/token
 Content-Type: application/json
 
 {
-  "usuario": "clinica_admin",
-  "contrasena": "A6@wL8!qT3#yM5$v"
+  "usuario": "PON-TU-USUARIO-AQUI",
+  "contrasena": "PON-TU-CLAVE-AQUI"
 }
 
 ### Estado del gateway
@@ -21,9 +21,9 @@ Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-  "cedula": "1755844442", 
-  "nombre": "Jordy",
-  "apellido": "Prado",
+  "cedula": "1755844459", 
+  "nombre": "Melissa",
+  "apellido": "Ibarra",
   "direccion": "Calle 10 # 20-30"
 }
 
@@ -41,8 +41,8 @@ Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-  "cedula": "100184568524",
-  "nombre": "Melissa Ibarra",
+  "cedula": "1001847979732348",
+  "nombre": "Juan Perez",
   "apellido": "García",
   "direccion": "Carrera 5 # 11-22"
 }

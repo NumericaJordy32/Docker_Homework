@@ -140,6 +140,8 @@ En Azure, OAuthJWT, Pacientes e Historial usan referencias a secretos de Contain
 
 RabbitMQ no se expone públicamente: usa ingreso TCP interno de Azure Container Apps en el puerto 5672.
 
+Para la grabación en Azure, muestre las Container Apps y las URLs públicas de Gateway y Swagger. RabbitMQ debe explicarse como infraestructura interna: Pacientes e Historial se conectan a su FQDN TCP interno, por lo que no existe una URL pública de Management que deba mostrarse.
+
 ### Publicación desde GitHub Actions
 
 El flujo `.github/workflows/publish-acr.yml` construye las cuatro imágenes, las publica en ACR y despliega las revisiones de Pacientes e Historial. Antes de ejecutarlo, configure en GitHub Actions los secretos (sin versionar valores):
